@@ -1,14 +1,15 @@
 from typing import List, Tuple
-from pydantic import BaseModel, Field, conint, constr
+from typing_extensions import Annotated
+from pydantic import BaseModel, Field, StringConstraints
 
-CardCode = constr(regex=r'^[2-9TJQKA][hdcs]$')
+CardCode = Annotated[str, StringConstraints(pattern=r'^[2-9TJQKA][hdcs]$')]
 
 
 class EquityRequest(BaseModel):
-    players: conint(ge=2, le=10)
-    hero: List[CardCode] = Field(..., min_items=2, max_items=2)
-    board: List[CardCode] = Field(default_factory=list, max_items=5)
-    sims: conint(ge=10000, le=1000000) = 200000
+    players: Annotated[int, Field(ge=2, le=10)]
+    hero: List[CardCode] = Field(..., min_length=2, max_length=2)
+    board: List[CardCode] = Field(default_factory=list, max_length=5)
+    sims: Annotated[int, Field(ge=10000, le=1000000)] = 200000
 
 
 class EquityResponse(BaseModel):
