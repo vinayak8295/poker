@@ -4,18 +4,15 @@ from .api.v1_equity import router as equity_router
 
 app = FastAPI(title="Poker Equity API")
 
-# 👇 allow your front-end origin(s)
-origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
+# Allow all origins for development (fix CORS error)
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,        # ["*"] in a pinch, but whitelist is safer
+    allow_origins=origins,        # Allow all origins
     allow_credentials=True,
-    allow_methods=["*"],          # or ["POST"]
-    allow_headers=["*"],          # or the exact headers you need
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(equity_router)
