@@ -115,3 +115,47 @@ def nuts_and_prob(
     prob = hits / trials
     nut_pairs_str = [(Card.int_to_str(a), Card.int_to_str(b)) for a, b in nut_pairs]
     return nuts_name, nut_pairs_str, prob
+
+
+def get_hand_class_and_rank(hero: List[int], board: List[int]) -> Tuple[str, str]:
+    """
+    Returns (hand class string, hand rank string) for the hero's best hand.
+    """
+    evaluator = Evaluator()
+    # Combine hero and board, pad board to 5 cards if needed
+    full_board = board[:]
+    while len(full_board) < 5:
+        full_board.append(-1)  # -1 is a placeholder, will be ignored by Evaluator
+    score = evaluator.evaluate(board, hero)
+    class_int = evaluator.get_rank_class(score)
+    class_str = evaluator.class_to_string(class_int)
+    rank_str = str(class_int)  # Or map to a string if you want e.g. '1' for Royal Flush
+    return class_str, rank_str
+
+
+def estimate_higher_hand_chance(hero: List[int], board: List[int], players: int, sims: int = 50000) -> float:
+    """
+    Monte Carlo: Estimate % chance at least one opponent has a higher hand class than hero.
+    """
+    evaluator = Evaluator()
+    full_deck = Deck().cards[:]
+    for c in hero + board:
+        full_deck.remove(c)
+    # Get hero's hand class
+    hero_score = evaluator.evaluate(board, hero)
+    hero_class = evaluator.get_rank_class(hero_score)
+    hits = 0
+    for _ in range(sims):
+        deck = full_deck[:]
+        random.shuffle(deck)
+        opp_hands = [[deck.pop(), deck.pop()] for _ in range(players - 1)]
+        runout = board[:]
+        while len(runout) < 5:
+            runout.append(deck.pop())
+        for opp in opp_hands:
+            opp_score = evaluator.evaluate(runout, opp)
+            opp_class = evaluator.get_rank_class(opp_score)
+            if opp_class < hero_class:  # Lower int = better hand
+                hits += 1
+                break
+    return 100.0 * hits / sims

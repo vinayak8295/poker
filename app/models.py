@@ -19,3 +19,6 @@ class EquityResponse(BaseModel):
     nuts: str
     nutHolePairs: List[Tuple[str, str]]
     opponentNutsProb: float
+    heroHandClass: str
+    heroHandRank: str
+    higherHandChance: float
